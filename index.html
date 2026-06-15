@@ -104,7 +104,6 @@
         }
     </style>
     
-    <!-- Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -128,7 +127,7 @@
     <p><span class="badge">🖐️</span> Open Hand → <span style="color:#0ff;">Expand & Morph</span></p>
     <p><span class="badge">✊</span> Closed Fist → <span style="color:#ff88aa;">Condense Sphere</span></p>
     <p><span class="badge">✌️</span> Peace Sign → <span style="color:#ffaa44;">Switch Shape</span></p>
-    <p><span class="badge">📏</span> Hand Distance → <span style="color:#ffaa66;">Zoom In/Out (Big Particles!)</span></p>
+    <p><span class="badge">📏</span> Hand Distance → <span style="color:#ffaa66;">Zoom In/Out</span></p>
     <hr>
     <p>✨ <b>Active Form:</b> <span id="shape-name" class="shape-highlight">SPHERE</span></p>
 </div>
@@ -137,7 +136,7 @@
     import * as THREE from 'three';
 
     // ---------- CONFIG ----------
-    const PARTICLE_COUNT = 20000;   // plenty of big, vivid balls
+    const PARTICLE_COUNT = 20000;
     let scene, camera, renderer, particleSystem, particleGeometry, shaderMaterial;
     let basePositions, targetPositionsArray = [];
     let currentShapeIdx = 0;
@@ -152,12 +151,12 @@
         uTime: { value: 0 },
         uExpansion: { value: 0.0 },
         uTargetPos: { value: new THREE.Vector3(0, 0, 0) },
-        uZoomScale: { value: 1.0 }   // makes particles bigger when zoomed in
+        uZoomScale: { value: 1.0 }
     };
     
     let targetExpansion = 0.0;
     let targetHandPos = new THREE.Vector3(0, 0, 0);
-    let targetCameraZ = 16;      // start medium
+    let targetCameraZ = 16;
     
     // ---------- THREE SETUP ----------
     function initThree() {
@@ -202,7 +201,7 @@
         return colors;
     }
     
-    // ---------- SHAPE GENERATORS (vibrant layout) ----------
+    // ---------- SHAPE GENERATORS ----------
     function baseSphere() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
@@ -352,7 +351,7 @@
         targetPositionsArray.push(diamondGrid());     // 8
     }
     
-    // ---------- SHADER (BIG, VIVID, ZOOM-AWARE) ----------
+    // ---------- SHADER (FIXED WHITE BLOWOUT) ----------
     const vertexShader = `
         uniform float uTime;
         uniform float uExpansion;
@@ -368,8 +367,9 @@
             vec3 finalPos = morphPos + (uTargetPos * 0.28 * uExpansion);
             vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
             float depth = 1.0 / (-mvPosition.z);
-            // Base particle size: 48 + extra zoom multiplier (big when zoomed in)
-            float sizeBase = 52.0 * uZoomScale;
+            
+            // Reduced particle size to prevent massive overlap
+            float sizeBase = 22.0 * uZoomScale; 
             float twinkle = 0.7 + 0.5 * sin(uTime * 5.0 + position.x * 8.0);
             gl_PointSize = (sizeBase * depth) * (0.85 + twinkle * 0.3);
             gl_Position = projectionMatrix * mvPosition;
@@ -383,12 +383,15 @@
             vec2 coord = gl_PointCoord;
             float dist = length(coord - vec2(0.5));
             if (dist > 0.5) discard;
-            // soft round glow, no white core, keep pure neon colors
-            float glow = pow(1.0 - dist * 1.5, 1.5);
-            float spark = 0.8 + 0.4 * sin(atan(coord.y - 0.5, coord.x - 0.5) * 12.0 + uTime * 15.0);
-            vec3 finalColor = vColor;
-            finalColor += vec3(0.5, 0.2, 0.8) * (glow * 0.4) * spark;
-            gl_FragColor = vec4(finalColor, glow * 0.95);
+            
+            // Tighter gradient to prevent edges from stacking into pure white
+            float glow = pow(1.0 - (dist * 2.0), 1.5); 
+            
+            // Keep the pure colors bright
+            vec3 finalColor = vColor * 1.2; 
+            
+            // Lower alpha multiplier restricts the blending from blowing out to white
+            gl_FragColor = vec4(finalColor, glow * 0.45);
         }
     `;
     
