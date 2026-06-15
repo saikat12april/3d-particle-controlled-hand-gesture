@@ -5,8 +5,6 @@ Morph between multiple geometric shapes, control particle expansion, and enjoy d
 
 🌐 **Live Demo:** [https://saikat12april.github.io/3d-particle-controlled-hand-gesture/](https://saikat12april.github.io/3d-particle-controlled-hand-gesture/)
 
-![Particle Demo](https://via.placeholder.com/800x400?text=Gesture+Particle+Universe) *(add a screenshot or GIF of your project here)*
-
 ---
 
 ## ✨ Features
