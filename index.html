@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Gesture Particle Universe | AI Hand Control</title>
+    <title>Gesture Particles · Big & Vivid</title>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            font-family: 'Segoe UI', 'Orbitron', monospace;
-            background-color: #000000;
+            background-color: #03030f;
+            font-family: 'Segoe UI', 'Poppins', system-ui, -apple-system, sans-serif;
         }
         #canvas-container {
             position: fixed;
@@ -19,110 +19,92 @@
             height: 100%;
             z-index: 1;
         }
-        /* Webcam feed - stylish corner */
+        /* Simple clean webcam box */
         #webcam {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 200px;
-            height: 150px;
-            border-radius: 16px;
-            border: 3px solid rgba(0, 255, 200, 0.8);
-            box-shadow: 0 0 20px rgba(0, 255, 200, 0.3);
-            background: #111;
+            width: 180px;
+            height: 135px;
+            border-radius: 12px;
+            border: 2px solid #0ff;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            background-color: #111;
             z-index: 20;
             transform: scaleX(-1);
             object-fit: cover;
-            transition: 0.2s ease;
-            backdrop-filter: blur(2px);
         }
-        /* Glass panel for instructions */
-        #instruction-box {
+        /* Minimal instruction panel */
+        .info-panel {
             position: fixed;
-            top: 24px;
-            left: 24px;
-            background: rgba(5, 5, 15, 0.75);
-            backdrop-filter: blur(12px);
-            border-radius: 24px;
-            border: 1px solid rgba(0, 255, 200, 0.4);
-            padding: 20px 26px;
-            color: #f0f0f0;
+            top: 20px;
+            left: 20px;
+            background: rgba(10, 10, 20, 0.7);
+            backdrop-filter: blur(8px);
+            border-radius: 20px;
+            padding: 14px 22px;
+            border-left: 4px solid #0ff;
             z-index: 15;
             pointer-events: none;
-            font-family: 'Segoe UI', system-ui;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            letter-spacing: 0.3px;
+            color: #eee;
+            font-size: 13px;
+            font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
-        h1 {
+        .info-panel h2 {
             margin: 0 0 8px 0;
-            font-size: 1.6rem;
+            font-size: 1.2rem;
             font-weight: 600;
-            background: linear-gradient(135deg, #00ffcc, #ff44aa);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
+            color: #0ff;
             letter-spacing: 1px;
         }
-        .instruction {
-            font-size: 0.85rem;
-            margin: 8px 0;
+        .info-panel p {
+            margin: 5px 0;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         .badge {
-            display: inline-block;
-            width: 28px;
-            text-align: center;
             font-size: 1.2rem;
+            min-width: 30px;
+        }
+        .shape-highlight {
+            color: #ff66cc;
+            font-weight: bold;
+            background: rgba(255,102,204,0.2);
+            padding: 2px 8px;
+            border-radius: 20px;
+            display: inline-block;
         }
         hr {
-            margin: 14px 0;
+            margin: 10px 0;
             border-color: rgba(255,255,255,0.2);
-        }
-        .active-shape {
-            font-weight: bold;
-            color: #ff66cc;
-            text-shadow: 0 0 6px #ff44aa;
-            text-transform: uppercase;
-            font-size: 1rem;
-        }
-        #shape-name {
-            font-size: 1.2rem;
-            font-weight: bold;
-            letter-spacing: 2px;
-        }
-        .status-glow {
-            font-size: 0.7rem;
-            color: #00ffcc;
         }
         #loading {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px);
-            border-radius: 32px;
-            padding: 28px 44px;
-            text-align: center;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(12px);
+            border-radius: 40px;
+            padding: 20px 36px;
+            color: #0ff;
+            font-weight: bold;
             z-index: 100;
-            border: 1px solid #00ffcc;
-            color: white;
-            font-weight: 500;
             font-family: monospace;
+            border: 1px solid #0ff;
+            text-align: center;
             pointer-events: none;
-            transition: 0.4s;
         }
         @media (max-width: 600px) {
-            #instruction-box { padding: 12px 18px; top: 12px; left: 12px; }
-            h1 { font-size: 1.2rem; }
-            .instruction { font-size: 0.7rem; }
-            #webcam { width: 140px; height: 105px; bottom: 10px; right: 10px; }
+            .info-panel { padding: 10px 16px; top: 12px; left: 12px; font-size: 11px; }
+            .info-panel h2 { font-size: 1rem; }
+            #webcam { width: 130px; height: 98px; bottom: 12px; right: 12px; }
         }
     </style>
     
-    <!-- Three.js core -->
+    <!-- Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -130,175 +112,160 @@
             }
         }
     </script>
-    <!-- Mediapipe libraries -->
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="loading">
-    🧠✨ INITIALIZING GESTURE ENGINE<br>
-    <span style="font-size:0.8rem;">Allow camera access • AI Hand Tracking</span>
+    ✋ STARTING GESTURE ENGINE<br>
+    <span style="font-size:0.8rem; color:#ccc;">Allow camera • Show your hand</span>
 </div>
 <div id="canvas-container"></div>
 <video id="webcam" autoplay playsinline muted></video>
 
-<div id="instruction-box">
-    <h1>🌀 GESTURE NEXUS</h1>
-    <div class="instruction"><span class="badge">🖐️</span> Open Hand → <span style="color:#00ffcc;">Expand & Morph</span></div>
-    <div class="instruction"><span class="badge">✊</span> Closed Fist → <span style="color:#ff88aa;">Condense Sphere</span></div>
-    <div class="instruction"><span class="badge">✌️</span> Peace Sign → <span style="color:#ffaa44;">Cycle Shape</span> 🔄</div>
-    <div class="instruction"><span class="badge">📏</span> Hand Distance → <span style="color:#ffaa66;">Dynamic Zoom</span> + Big Particles</div>
-    <div class="instruction"><span class="badge">🎯</span> Hand Motion → <span style="color:#ff66cc;">Particle Attraction</span></div>
+<div class="info-panel">
+    <h2>🎮 GESTURE CONTROL</h2>
+    <p><span class="badge">🖐️</span> Open Hand → <span style="color:#0ff;">Expand & Morph</span></p>
+    <p><span class="badge">✊</span> Closed Fist → <span style="color:#ff88aa;">Condense Sphere</span></p>
+    <p><span class="badge">✌️</span> Peace Sign → <span style="color:#ffaa44;">Switch Shape</span></p>
+    <p><span class="badge">📏</span> Hand Distance → <span style="color:#ffaa66;">Zoom In/Out (Big Particles!)</span></p>
     <hr>
-    <div class="instruction">✨ ACTIVE FORM: <span id="shape-name" class="active-shape">SPHERE</span> ✨</div>
-    <div class="status-glow" style="margin-top:6px;">⚡ 18k hyperglow particles • Realistic zoom</div>
+    <p>✨ <b>Active Form:</b> <span id="shape-name" class="shape-highlight">SPHERE</span></p>
 </div>
 
 <script type="module">
     import * as THREE from 'three';
 
-    // ========== CONFIGURATION ==========
-    const PARTICLE_COUNT = 21000;      // increased density for realism
+    // ---------- CONFIG ----------
+    const PARTICLE_COUNT = 20000;   // plenty of big, vivid balls
     let scene, camera, renderer, particleSystem, particleGeometry, shaderMaterial;
     let basePositions, targetPositionsArray = [];
-    let currentShapeIndex = 0;
+    let currentShapeIdx = 0;
     const clock = new THREE.Clock();
     
-    // Shape library: more stunning & diverse
     const shapes = [
-        "SPHERE", "HEART", "SATURN RING", "FLOWER BLOOM", "SUPERNOVA",
-        "TORUS KNOT", "STAR CROWN", "COSMIC WAVE", "DIAMOND GRID"
+        "SPHERE", "HEART", "SATURN", "FLOWER", "SUPERNOVA",
+        "TORUS KNOT", "STAR CROWN", "WAVE", "DIAMOND"
     ];
     
-    // Shader uniforms
     let uniforms = {
         uTime: { value: 0 },
         uExpansion: { value: 0.0 },
         uTargetPos: { value: new THREE.Vector3(0, 0, 0) },
-        uZoomIntensity: { value: 1.0 }   // makes particles bigger when zoomed in
+        uZoomScale: { value: 1.0 }   // makes particles bigger when zoomed in
     };
     
     let targetExpansion = 0.0;
     let targetHandPos = new THREE.Vector3(0, 0, 0);
-    let targetCameraZ = 14;      // base distance
+    let targetCameraZ = 16;      // start medium
     
-    // ========== THREE.JS INIT ==========
+    // ---------- THREE SETUP ----------
     function initThree() {
         const container = document.getElementById("canvas-container");
         scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x010118);
-        scene.fog = new THREE.FogExp2(0x010118, 0.0008);  // subtle depth fog
-        
+        scene.background = new THREE.Color(0x020210);
         camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.2, 100);
-        camera.position.set(0, 1, targetCameraZ);
-        camera.lookAt(0, 0, 0);
-        
-        renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+        camera.position.set(0, 0.5, targetCameraZ);
+        renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.setPixelRatio(window.devicePixelRatio);
         container.appendChild(renderer.domElement);
-        
-        window.addEventListener("resize", onWindowResize);
+        window.addEventListener("resize", () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
     }
     
-    function onWindowResize() {
-        camera.aspect = window.innerWidth / window.innerHeight;
-        camera.updateProjectionMatrix();
-        renderer.setSize(window.innerWidth, window.innerHeight);
-    }
-    
-    // ========== GENERATE VIBRANT COLORS ==========
-    function generateColors(count) {
+    // ---------- VIVID COLORS (no white, only neon) ----------
+    function generateVividColors(count) {
         const colors = new Float32Array(count * 3);
         for (let i = 0; i < count; i++) {
-            // dynamic cosmic palette: cyan, magenta, gold, electric purple
             const choice = Math.random();
-            let r, g, b;
-            if (choice < 0.33) {
-                r = 0.2 + Math.random() * 0.4;   // cyan/blue
-                g = 0.6 + Math.random() * 0.4;
-                b = 0.8 + Math.random() * 0.2;
-            } else if (choice < 0.66) {
-                r = 0.8 + Math.random() * 0.3;   // pink/magenta
-                g = 0.2 + Math.random() * 0.4;
-                b = 0.6 + Math.random() * 0.4;
+            if (choice < 0.34) {
+                // Cyan / electric blue
+                colors[i*3] = 0.0;
+                colors[i*3+1] = 0.7 + Math.random() * 0.3;
+                colors[i*3+2] = 0.9 + Math.random() * 0.1;
+            } else if (choice < 0.67) {
+                // Magenta / pink
+                colors[i*3] = 0.9 + Math.random() * 0.3;
+                colors[i*3+1] = 0.1 + Math.random() * 0.4;
+                colors[i*3+2] = 0.7 + Math.random() * 0.3;
             } else {
-                r = 1.0;                         // gold/fire
-                g = 0.5 + Math.random() * 0.5;
-                b = 0.2 + Math.random() * 0.3;
+                // Gold / orange
+                colors[i*3] = 1.0;
+                colors[i*3+1] = 0.5 + Math.random() * 0.5;
+                colors[i*3+2] = 0.1 + Math.random() * 0.3;
             }
-            colors[i*3] = r;
-            colors[i*3+1] = g;
-            colors[i*3+2] = b;
         }
         return colors;
     }
     
-    // ========== CREATE GEOMETRIES + SHAPE TEMPLATES ==========
-    function generateBaseSphere() {
-        const positions = new Float32Array(PARTICLE_COUNT * 3);
+    // ---------- SHAPE GENERATORS (vibrant layout) ----------
+    function baseSphere() {
+        const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
-            // fibonacci sphere style for uniform base
             const phi = Math.acos(1 - 2 * (i / PARTICLE_COUNT));
-            const theta = Math.PI * 2 * (i * 0.618033988749895);
-            const radius = 3.2;
-            positions[i*3] = radius * Math.sin(phi) * Math.cos(theta);
-            positions[i*3+1] = radius * Math.sin(phi) * Math.sin(theta);
-            positions[i*3+2] = radius * Math.cos(phi);
+            const theta = Math.PI * 2 * (i * 0.6180339887);
+            const r = 3.3;
+            pos[i*3] = r * Math.sin(phi) * Math.cos(theta);
+            pos[i*3+1] = r * Math.sin(phi) * Math.sin(theta);
+            pos[i*3+2] = r * Math.cos(phi);
         }
-        return positions;
+        return pos;
     }
     
-    function generateHeartShape() {
+    function heartShape() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const t = Math.PI * 2 * Math.random();
-            const heartX = 16 * Math.pow(Math.sin(t), 3);
-            const heartY = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
-            pos[i*3] = heartX * 0.23;
-            pos[i*3+1] = heartY * 0.23;
-            pos[i*3+2] = (Math.random() - 0.5) * 2.2;
-        }
-        return pos;
-    }
-    
-    function generateSaturn() {
-        const pos = new Float32Array(PARTICLE_COUNT * 3);
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            if (i < PARTICLE_COUNT * 0.4) {
-                const theta = Math.random() * Math.PI * 2;
-                const phi = Math.acos(2 * Math.random() - 1);
-                pos[i*3] = 1.9 * Math.sin(phi) * Math.cos(theta);
-                pos[i*3+1] = 1.9 * Math.sin(phi) * Math.sin(theta);
-                pos[i*3+2] = 1.9 * Math.cos(phi);
-            } else {
-                const rad = 3.0 + Math.random() * 4.0;
-                const angle = Math.random() * Math.PI * 2;
-                pos[i*3] = rad * Math.cos(angle);
-                pos[i*3+1] = (Math.random() - 0.5) * 0.25;
-                pos[i*3+2] = rad * Math.sin(angle);
-            }
-        }
-        return pos;
-    }
-    
-    function generateFlower() {
-        const pos = new Float32Array(PARTICLE_COUNT * 3);
-        for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const theta = Math.random() * Math.PI * 2;
-            const rBase = 4.2 * Math.cos(5 * theta) + 1.5;
-            const rad = rBase * (0.8 + Math.random() * 0.5);
-            pos[i*3] = rad * Math.cos(theta);
-            pos[i*3+1] = rad * Math.sin(theta);
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2*Math.cos(3*t) - Math.cos(4*t);
+            pos[i*3] = x * 0.22;
+            pos[i*3+1] = y * 0.22;
             pos[i*3+2] = (Math.random() - 0.5) * 2.0;
         }
         return pos;
     }
     
-    function generateExplosion() {
+    function saturnRing() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const rad = Math.pow(Math.random(), 0.7) * 18;
+            if (i < PARTICLE_COUNT * 0.4) {
+                const theta = Math.random() * Math.PI * 2;
+                const phi = Math.acos(2 * Math.random() - 1);
+                pos[i*3] = 2.0 * Math.sin(phi) * Math.cos(theta);
+                pos[i*3+1] = 2.0 * Math.sin(phi) * Math.sin(theta);
+                pos[i*3+2] = 2.0 * Math.cos(phi);
+            } else {
+                const rad = 3.2 + Math.random() * 4.2;
+                const ang = Math.random() * Math.PI * 2;
+                pos[i*3] = rad * Math.cos(ang);
+                pos[i*3+1] = (Math.random() - 0.5) * 0.2;
+                pos[i*3+2] = rad * Math.sin(ang);
+            }
+        }
+        return pos;
+    }
+    
+    function flowerBloom() {
+        const pos = new Float32Array(PARTICLE_COUNT * 3);
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const theta = Math.random() * Math.PI * 2;
+            const radius = 4.0 * Math.cos(5 * theta) + 1.4;
+            const r = radius * (0.7 + Math.random() * 0.6);
+            pos[i*3] = r * Math.cos(theta);
+            pos[i*3+1] = r * Math.sin(theta);
+            pos[i*3+2] = (Math.random() - 0.5) * 1.8;
+        }
+        return pos;
+    }
+    
+    function supernova() {
+        const pos = new Float32Array(PARTICLE_COUNT * 3);
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const rad = Math.pow(Math.random(), 0.6) * 18;
             const theta = Math.random() * Math.PI * 2;
             const phi = Math.acos(2 * Math.random() - 1);
             pos[i*3] = rad * Math.sin(phi) * Math.cos(theta);
@@ -308,50 +275,44 @@
         return pos;
     }
     
-    // NEW: TORUS KNOT (elegant)
-    function generateTorusKnot() {
+    function torusKnot() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const t = (i / PARTICLE_COUNT) * Math.PI * 4;
             const R = 2.8;
-            const rTube = 0.9;
             const p = 3, q = 7;
-            const knotX = R * (1 + 0.3 * Math.cos(q * t)) * Math.cos(p * t);
-            const knotY = R * (1 + 0.3 * Math.cos(q * t)) * Math.sin(p * t);
-            const knotZ = R * 0.8 * Math.sin(q * t);
-            // add radial noise for organic look
-            pos[i*3] = knotX + (Math.random() - 0.5) * 0.35;
-            pos[i*3+1] = knotY + (Math.random() - 0.5) * 0.35;
-            pos[i*3+2] = knotZ + (Math.random() - 0.5) * 0.35;
+            const x = R * (1 + 0.3 * Math.cos(q * t)) * Math.cos(p * t);
+            const y = R * (1 + 0.3 * Math.cos(q * t)) * Math.sin(p * t);
+            const z = R * 0.8 * Math.sin(q * t);
+            pos[i*3] = x + (Math.random() - 0.5) * 0.3;
+            pos[i*3+1] = y + (Math.random() - 0.5) * 0.3;
+            pos[i*3+2] = z + (Math.random() - 0.5) * 0.3;
         }
         return pos;
     }
     
-    // STAR CROWN (radial star shape)
-    function generateStarCrown() {
+    function starCrown() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
             const angle = Math.random() * Math.PI * 2;
             const spikes = 5;
-            const radVar = 3.0 + 1.6 * Math.cos(spikes * angle + Math.sin(angle * 2));
-            const rad = radVar * (0.7 + Math.random() * 0.6);
-            pos[i*3] = rad * Math.cos(angle);
-            pos[i*3+1] = rad * Math.sin(angle);
-            pos[i*3+2] = (Math.random() - 0.5) * 2.8;
+            const rad = 3.0 + 1.8 * Math.cos(spikes * angle);
+            const r = rad * (0.7 + Math.random() * 0.7);
+            pos[i*3] = r * Math.cos(angle);
+            pos[i*3+1] = r * Math.sin(angle);
+            pos[i*3+2] = (Math.random() - 0.5) * 2.5;
         }
         return pos;
     }
     
-    // COSMIC WAVE (sinusoidal helix)
-    function generateCosmicWave() {
+    function cosmicWave() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
         for (let i = 0; i < PARTICLE_COUNT; i++) {
-            const t = (i / PARTICLE_COUNT) * Math.PI * 6;
-            const radius = 3.5;
-            const height = Math.sin(t * 2.5) * 2.2;
-            const x = (radius + Math.sin(t * 5) * 0.8) * Math.cos(t);
-            const y = height * 1.5 + Math.cos(t * 3) * 0.7;
-            const z = (radius + Math.cos(t * 4) * 0.6) * Math.sin(t);
+            const t = (i / PARTICLE_COUNT) * Math.PI * 5;
+            const r = 3.2;
+            const x = (r + Math.sin(t * 3) * 1.2) * Math.cos(t);
+            const y = Math.sin(t * 2.5) * 2.2;
+            const z = (r + Math.cos(t * 2.5) * 1.0) * Math.sin(t);
             pos[i*3] = x;
             pos[i*3+1] = y;
             pos[i*3+2] = z;
@@ -359,111 +320,92 @@
         return pos;
     }
     
-    // DIAMOND GRID (crystalline)
-    function generateDiamondGrid() {
+    function diamondGrid() {
         const pos = new Float32Array(PARTICLE_COUNT * 3);
-        const gridRes = Math.floor(Math.cbrt(PARTICLE_COUNT)) + 1;
-        let idx = 0;
-        for (let i = 0; i < PARTICLE_COUNT && idx < PARTICLE_COUNT; i++) {
-            const x = (Math.random() - 0.5) * 5.5;
-            const y = (Math.random() - 0.5) * 5.5;
-            const z = (Math.random() - 0.5) * 5.5;
-            const boundary = Math.abs(x) + Math.abs(y) + Math.abs(z);
-            if (boundary < 5.2 && boundary > 1.2) {
-                pos[idx*3] = x;
-                pos[idx*3+1] = y;
-                pos[idx*3+2] = z;
-                idx++;
+        for (let i = 0; i < PARTICLE_COUNT; i++) {
+            const x = (Math.random() - 0.5) * 5.8;
+            const y = (Math.random() - 0.5) * 5.8;
+            const z = (Math.random() - 0.5) * 5.8;
+            const bound = Math.abs(x) + Math.abs(y) + Math.abs(z);
+            if (bound < 5.0 && bound > 1.2) {
+                pos[i*3] = x;
+                pos[i*3+1] = y;
+                pos[i*3+2] = z;
             } else {
-                // fill gaps with random octahedral fallback
-                pos[i*3] = (Math.random() - 0.5) * 6;
-                pos[i*3+1] = (Math.random() - 0.5) * 6;
-                pos[i*3+2] = (Math.random() - 0.5) * 6;
+                pos[i*3] = (Math.random() - 0.5) * 7;
+                pos[i*3+1] = (Math.random() - 0.5) * 7;
+                pos[i*3+2] = (Math.random() - 0.5) * 7;
             }
         }
         return pos;
     }
     
-    // Build all shape templates
-    function buildAllShapes() {
-        targetPositionsArray.push(generateBaseSphere());     // 0 SPHERE
-        targetPositionsArray.push(generateHeartShape());     // 1 HEART
-        targetPositionsArray.push(generateSaturn());         // 2 SATURN
-        targetPositionsArray.push(generateFlower());         // 3 FLOWER
-        targetPositionsArray.push(generateExplosion());      // 4 SUPERNOVA
-        targetPositionsArray.push(generateTorusKnot());      // 5 TORUS KNOT
-        targetPositionsArray.push(generateStarCrown());      // 6 STAR CROWN
-        targetPositionsArray.push(generateCosmicWave());     // 7 COSMIC WAVE
-        targetPositionsArray.push(generateDiamondGrid());    // 8 DIAMOND GRID
+    function buildAllShapeTemplates() {
+        targetPositionsArray.push(baseSphere());      // 0
+        targetPositionsArray.push(heartShape());      // 1
+        targetPositionsArray.push(saturnRing());      // 2
+        targetPositionsArray.push(flowerBloom());     // 3
+        targetPositionsArray.push(supernova());       // 4
+        targetPositionsArray.push(torusKnot());       // 5
+        targetPositionsArray.push(starCrown());       // 6
+        targetPositionsArray.push(cosmicWave());      // 7
+        targetPositionsArray.push(diamondGrid());     // 8
     }
+    
+    // ---------- SHADER (BIG, VIVID, ZOOM-AWARE) ----------
+    const vertexShader = `
+        uniform float uTime;
+        uniform float uExpansion;
+        uniform vec3 uTargetPos;
+        uniform float uZoomScale;
+        attribute vec3 aTargetPosition;
+        attribute vec3 aColor;
+        varying vec3 vColor;
+        
+        void main() {
+            vColor = aColor;
+            vec3 morphPos = mix(position, aTargetPosition, uExpansion);
+            vec3 finalPos = morphPos + (uTargetPos * 0.28 * uExpansion);
+            vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
+            float depth = 1.0 / (-mvPosition.z);
+            // Base particle size: 48 + extra zoom multiplier (big when zoomed in)
+            float sizeBase = 52.0 * uZoomScale;
+            float twinkle = 0.7 + 0.5 * sin(uTime * 5.0 + position.x * 8.0);
+            gl_PointSize = (sizeBase * depth) * (0.85 + twinkle * 0.3);
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    `;
+    
+    const fragmentShader = `
+        varying vec3 vColor;
+        uniform float uTime;
+        void main() {
+            vec2 coord = gl_PointCoord;
+            float dist = length(coord - vec2(0.5));
+            if (dist > 0.5) discard;
+            // soft round glow, no white core, keep pure neon colors
+            float glow = pow(1.0 - dist * 1.5, 1.5);
+            float spark = 0.8 + 0.4 * sin(atan(coord.y - 0.5, coord.x - 0.5) * 12.0 + uTime * 15.0);
+            vec3 finalColor = vColor;
+            finalColor += vec3(0.5, 0.2, 0.8) * (glow * 0.4) * spark;
+            gl_FragColor = vec4(finalColor, glow * 0.95);
+        }
+    `;
     
     function initParticleSystem() {
         particleGeometry = new THREE.BufferGeometry();
-        basePositions = generateBaseSphere();
-        const colorsArray = generateColors(PARTICLE_COUNT);
-        
+        basePositions = baseSphere();
+        const colors = generateVividColors(PARTICLE_COUNT);
         particleGeometry.setAttribute("position", new THREE.BufferAttribute(basePositions, 3));
-        particleGeometry.setAttribute("aColor", new THREE.BufferAttribute(colorsArray, 3));
+        particleGeometry.setAttribute("aColor", new THREE.BufferAttribute(colors, 3));
         
-        buildAllShapes();
-        
-        // Initial target shape: Sphere (index 0)
+        buildAllShapeTemplates();
         particleGeometry.setAttribute("aTargetPosition", new THREE.BufferAttribute(targetPositionsArray[0], 3));
-        
-        // Enhanced Shader Material with realistic glow & dynamic size
-        const vertexShaderCode = `
-            uniform float uTime;
-            uniform float uExpansion;
-            uniform vec3 uTargetPos;
-            uniform float uZoomIntensity;
-            attribute vec3 aTargetPosition;
-            attribute vec3 aColor;
-            varying vec3 vColor;
-            
-            void main() {
-                vColor = aColor;
-                // morph between base sphere and target shape
-                vec3 morphedPos = mix(position, aTargetPosition, uExpansion);
-                // Hand attraction field (dynamic)
-                vec3 finalPos = morphedPos + (uTargetPos * 0.28 * uExpansion);
-                
-                vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
-                float depthFactor = 1.0 / (-mvPosition.z);
-                // Base size dynamic: bigger when zoomed in (uZoomIntensity > 1) + natural depth
-                float baseScale = 48.0 * uZoomIntensity;
-                float twinkle = 0.7 + 0.5 * sin(uTime * 4.0 + position.x * 5.0);
-                gl_PointSize = (baseScale * depthFactor) * (0.9 + twinkle * 0.3);
-                gl_Position = projectionMatrix * mvPosition;
-            }
-        `;
-        
-        const fragmentShaderCode = `
-            uniform float uTime;
-            varying vec3 vColor;
-            
-            void main() {
-                vec2 coord = gl_PointCoord;
-                float dist = length(coord - vec2(0.5));
-                if (dist > 0.5) discard;
-                
-                // Realistic glowing orb with core emphasis
-                float glow = pow(1.0 - dist * 1.6, 1.8);
-                float coreGlow = pow(1.0 - dist * 2.2, 1.2);
-                float sparkle = 0.8 + 0.4 * sin(atan(coord.y - 0.5, coord.x - 0.5) * 12.0 + uTime * 12.0);
-                
-                vec3 finalColor = vColor;
-                finalColor += vec3(0.8, 0.4, 1.0) * coreGlow * 0.5;
-                finalColor = mix(finalColor, vec3(1.0, 0.9, 0.6), sparkle * 0.3);
-                
-                float alpha = glow * 0.95;
-                gl_FragColor = vec4(finalColor, alpha);
-            }
-        `;
         
         shaderMaterial = new THREE.ShaderMaterial({
             uniforms: uniforms,
-            vertexShader: vertexShaderCode,
-            fragmentShader: fragmentShaderCode,
+            vertexShader: vertexShader,
+            fragmentShader: fragmentShader,
             transparent: true,
             depthWrite: false,
             blending: THREE.AdditiveBlending
@@ -474,39 +416,30 @@
     }
     
     function cycleShape() {
-        currentShapeIndex = (currentShapeIndex + 1) % shapes.length;
-        document.getElementById("shape-name").innerText = shapes[currentShapeIndex];
-        const newTargetAttr = new THREE.BufferAttribute(targetPositionsArray[currentShapeIndex], 3);
-        particleGeometry.setAttribute("aTargetPosition", newTargetAttr);
+        currentShapeIdx = (currentShapeIdx + 1) % shapes.length;
+        document.getElementById("shape-name").innerText = shapes[currentShapeIdx];
+        particleGeometry.setAttribute("aTargetPosition", new THREE.BufferAttribute(targetPositionsArray[currentShapeIdx], 3));
         particleGeometry.attributes.aTargetPosition.needsUpdate = true;
-        
-        // subtle haptic feedback (visual pulse)
-        shaderMaterial.uniforms.uExpansion.value = Math.min(shaderMaterial.uniforms.uExpansion.value + 0.2, 1.0);
-        setTimeout(() => {}, 50);
     }
     
-    // ========== MEDIAPIPE HAND TRACKING & GESTURES ==========
+    // ---------- MEDIAPIPE HAND + ZOOM ----------
     let gestureCooldown = false;
     
     function initMediaPipe() {
-        const videoElement = document.getElementById("webcam");
+        const videoEl = document.getElementById("webcam");
         const hands = new Hands({
             locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`,
         });
-        
         hands.setOptions({
             maxNumHands: 1,
             modelComplexity: 1,
-            minDetectionConfidence: 0.6,
-            minTrackingConfidence: 0.6,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5,
         });
         
         hands.onResults(onHandResults);
-        
-        const cameraObj = new Camera(videoElement, {
-            onFrame: async () => {
-                await hands.send({ image: videoElement });
-            },
+        const cameraObj = new Camera(videoEl, {
+            onFrame: async () => { await hands.send({ image: videoEl }); },
             width: 640,
             height: 480,
         });
@@ -518,107 +451,98 @@
     function onHandResults(results) {
         if (!results.multiHandLandmarks || results.multiHandLandmarks.length === 0) {
             targetExpansion = 0.0;
-            targetCameraZ = 14;
+            targetCameraZ = 16;
             return;
         }
         
-        const landmarks = results.multiHandLandmarks[0];
-        const wrist = landmarks[0];
-        
-        // Map hand position to influence particles
+        const lm = results.multiHandLandmarks[0];
+        const wrist = lm[0];
+        // Hand position influence
         targetHandPos.x = (wrist.x - 0.5) * -16;
         targetHandPos.y = (wrist.y - 0.5) * -12;
         
-        // Dynamic zoom: based on hand distance using wrist to middle finger base
-        const midBase = landmarks[9];
-        const depthDelta = Math.hypot(midBase.x - wrist.x, midBase.y - wrist.y);
-        // Map depth: close hand -> camera zooms IN (smaller Z), far hand -> zoom OUT
-        let mappedZ = THREE.MathUtils.mapLinear(depthDelta, 0.07, 0.28, 6.5, 23);
-        mappedZ = THREE.MathUtils.clamp(mappedZ, 5.5, 26);
-        targetCameraZ = mappedZ;
+        // ZOOM: distance between wrist and middle finger base -> powerful zoom range
+        const midBase = lm[9];
+        const depthVal = Math.hypot(midBase.x - wrist.x, midBase.y - wrist.y);
+        // map: hand close (0.08) -> Z=5 (extreme zoom IN), hand far (0.28) -> Z=28 (zoom OUT)
+        let newZ = THREE.MathUtils.mapLinear(depthVal, 0.08, 0.28, 5.5, 28);
+        newZ = THREE.MathUtils.clamp(newZ, 5.0, 30);
+        targetCameraZ = newZ;
         
-        // Gesture recognition
-        const indexTip = landmarks[8];
-        const indexBase = landmarks[5];
-        const middleTip = landmarks[12];
-        const middleBase = landmarks[9];
-        const ringTip = landmarks[16];
-        const pinkyTip = landmarks[20];
-        const thumbTip = landmarks[4];
-        const thumbBase = landmarks[2];
+        // Gesture detection
+        const idxTip = lm[8], idxBase = lm[5];
+        const midTip = lm[12], midBase2 = lm[9];
+        const ringTip = lm[16], pinkyTip = lm[20];
+        const thumbTip = lm[4], thumbBase = lm[2];
         
-        const isIndexExtended = indexTip.y < indexBase.y;
-        const isMiddleExtended = middleTip.y < middleBase.y;
-        const isRingClosed = ringTip.y > landmarks[13].y;
-        const isPinkyClosed = pinkyTip.y > landmarks[17].y;
-        const isThumbExtended = thumbTip.x < thumbBase.x;
+        const idxExt = idxTip.y < idxBase.y;
+        const midExt = midTip.y < midBase2.y;
+        const ringClosed = ringTip.y > lm[13].y;
+        const pinkyClosed = pinkyTip.y > lm[17].y;
+        const thumbOpen = thumbTip.x < thumbBase.x;
         
-        // PEACE SIGN (index + middle up)
-        if (isIndexExtended && isMiddleExtended && isRingClosed && isPinkyClosed && !gestureCooldown) {
+        // Peace sign (cycle)
+        if (idxExt && midExt && ringClosed && pinkyClosed && !gestureCooldown) {
             cycleShape();
             gestureCooldown = true;
-            setTimeout(() => { gestureCooldown = false; }, 750);
-            targetExpansion = 0.85;
+            setTimeout(() => { gestureCooldown = false; }, 700);
+            targetExpansion = 0.9;
         }
-        // OPEN PALM (expand / morph fully)
-        else if (isIndexExtended && isMiddleExtended && !isRingClosed && thumbTip.y < indexBase.y) {
+        // Open palm -> full expansion
+        else if (idxExt && midExt && !ringClosed && thumbOpen) {
             targetExpansion = 1.0;
         }
-        // FIST / CLOSED HAND: condense to sphere
-        else if (!isIndexExtended && !isMiddleExtended && !isThumbExtended) {
+        // Closed fist -> sphere
+        else if (!idxExt && !midExt && !thumbOpen) {
             targetExpansion = 0.0;
         }
-        // neutral open but not full palm: medium blending
         else {
-            targetExpansion = 0.65;
+            targetExpansion = 0.6;
         }
     }
     
-    // ========== ANIMATION LOOP ==========
+    // ---------- ANIMATION LOOP ----------
     function animate() {
         requestAnimationFrame(animate);
-        const elapsedTime = clock.getElapsedTime();
-        uniforms.uTime.value = elapsedTime;
+        const elapsed = clock.getElapsedTime();
+        uniforms.uTime.value = elapsed;
         
-        // Smooth interpolation for morph and hand influence
+        // Smooth interpolation
         uniforms.uExpansion.value += (targetExpansion - uniforms.uExpansion.value) * 0.09;
-        uniforms.uTargetPos.value.lerp(targetHandPos, 0.13);
+        uniforms.uTargetPos.value.lerp(targetHandPos, 0.12);
         
-        // Camera position interpolation + dynamic zoom intensity for BIG PARTICLES WHEN ZOOMED IN
-        camera.position.z += (targetCameraZ - camera.position.z) * 0.1;
-        // Enhance particle size when camera is close (zoom in)
-        let zoomFactor = THREE.MathUtils.mapLinear(camera.position.z, 6, 24, 1.75, 0.95);
-        zoomFactor = THREE.MathUtils.clamp(zoomFactor, 0.9, 1.85);
-        uniforms.uZoomIntensity.value = zoomFactor;
+        // Dynamic camera zoom
+        camera.position.z += (targetCameraZ - camera.position.z) * 0.12;
+        // Update shader zoom factor: when camera is near (small Z), particles grow larger
+        let zoomFactor = THREE.MathUtils.mapLinear(camera.position.z, 5, 28, 1.9, 0.85);
+        zoomFactor = Math.min(2.0, Math.max(0.85, zoomFactor));
+        uniforms.uZoomScale.value = zoomFactor;
         
-        // Gentle rotation for dynamic presence
-        particleSystem.rotation.y = elapsedTime * 0.03;
-        particleSystem.rotation.x = Math.sin(elapsedTime * 0.12) * 0.08;
-        particleSystem.rotation.z = elapsedTime * 0.01;
+        // Gentle rotation for drama
+        particleSystem.rotation.y = elapsed * 0.03;
+        particleSystem.rotation.x = Math.sin(elapsed * 0.1) * 0.05;
         
-        // tiny starfield effect via camera slight orbit? Not needed but looks great
         renderer.render(scene, camera);
     }
     
-    // ========== BOOTSTRAP ==========
+    // ---------- START ----------
     function init() {
         initThree();
         initParticleSystem();
         initMediaPipe();
         animate();
-        // add subtle ambient stars via simple particle background? not needed but clean.
-        const starFieldGeo = new THREE.BufferGeometry();
-        const starCount = 800;
+        // add distant background stars (optional)
+        const starGeo = new THREE.BufferGeometry();
         const starPos = [];
-        for (let i = 0; i < starCount; i++) {
+        for (let i = 0; i < 1200; i++) {
             starPos.push((Math.random() - 0.5) * 200);
-            starPos.push((Math.random() - 0.5) * 100);
-            starPos.push((Math.random() - 0.5) * 80 - 40);
+            starPos.push((Math.random() - 0.5) * 120);
+            starPos.push((Math.random() - 0.5) * 90 - 40);
         }
-        starFieldGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(starPos), 3));
-        const starMat = new THREE.PointsMaterial({ color: 0xffffff, size: 0.12, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
-        const stars = new THREE.Points(starFieldGeo, starMat);
-        scene.add(stars);
+        starGeo.setAttribute("position", new THREE.BufferAttribute(new Float32Array(starPos), 3));
+        const starMat = new THREE.PointsMaterial({ color: 0x88aaff, size: 0.08, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending });
+        const starField = new THREE.Points(starGeo, starMat);
+        scene.add(starField);
     }
     
     init();
